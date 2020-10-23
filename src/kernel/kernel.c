@@ -41,6 +41,7 @@ void kernel_main(ptr_t magic, ptr_t addr) {
     vmm_init();
     // 堆初始化
     heap_init();
+
     test();
     showinfo();
 
