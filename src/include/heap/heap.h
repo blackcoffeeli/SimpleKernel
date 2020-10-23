@@ -16,7 +16,7 @@ extern "C" {
 #include "pmm.h"
 
 // 堆起始地址，内核栈结束后
-#define HEAP_START (KERNEL_STACK_END)
+#define HEAP_START (KERNEL_STACK_END & PMM_PAGE_MASK)
 // 堆最大容量 4MB
 #define HEAP_MAX_SIZE (0x400000UL)
 // 堆结束地址

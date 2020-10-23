@@ -45,7 +45,7 @@ extern ptr_t *kernel_end;
 // 内核栈需要的内存页数
 #define KERNEL_STACK_PAGES (KERNEL_STACK_SIZE / PMM_PAGE_SIZE)
 // 内核栈开始地址，内核结束后
-#define KERNEL_STACK_START (KERNEL_END_ADDR)
+#define KERNEL_STACK_START (((ptr_t)(KERNEL_END_ADDR)) & PMM_PAGE_MASK)
 // 内核栈结束地址
 #define KERNEL_STACK_END (KERNEL_STACK_START + KERNEL_STACK_SIZE)
 // 物理内存大小 2GB
