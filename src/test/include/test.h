@@ -24,6 +24,9 @@ bool test_pmm(void);
 // 虚拟内存
 bool test_vmm(void);
 
+// 堆
+bool test_heap(void);
+
 #ifdef __cplusplus
 }
 #endif

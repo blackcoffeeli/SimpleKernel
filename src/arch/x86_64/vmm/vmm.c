@@ -131,6 +131,57 @@ void switch_pgd(pmd_t *pgd) {
     __asm__ volatile("mov %0, %%cr3" : : "r"(pgd));
 }
 
+void map(pmd_t *pgd_now, ptr_t va, ptr_t pa, uint32_t flags) {
+    uint32_t pgd_idx = VMM_PGD_INDEX(va);
+    uint32_t pte_idx = VMM_PTE_INDEX(va);
+    pte_t *  pte     = (pte_t *)(pgd_now[pgd_idx] & VMM_PAGE_MASK);
+    // 转换到内核线性地址
+    if (pte == NULL) {
+        pgd_now[pgd_idx] = (uint32_t)pte | flags;
+        pte              = (pte_t *)VMM_PA_LA((ptr_t)pte);
+    }
+    else {
+        pte = (pte_t *)VMM_PA_LA((ptr_t)pte);
+    }
+
+    pte[pte_idx] = (pa & VMM_PAGE_MASK) | flags;
+    // 通知 CPU 更新页表缓存
+    CPU_INVLPG(va);
+    return;
+}
+
+void unmap(pmd_t *pgd_now, ptr_t va) {
+    uint32_t pgd_idx = VMM_PGD_INDEX(va);
+    uint32_t pte_idx = VMM_PTE_INDEX(va);
+    pte_t *  pte     = (pte_t *)(pgd_now[pgd_idx] & VMM_PAGE_MASK);
+    // 转换到内核线性地址
+    pte          = (pte_t *)VMM_PA_LA((ptr_t)pte);
+    pte[pte_idx] = 0;
+    // 通知 CPU 更新页表缓存
+    CPU_INVLPG(va);
+    return;
+}
+
+uint32_t get_mapping(pmd_t *pgd_now, ptr_t va, ptr_t *pa) {
+    uint32_t pgd_idx = VMM_PGD_INDEX(va);
+    uint32_t pte_idx = VMM_PTE_INDEX(va);
+
+    pte_t *pte = (pte_t *)(pgd_now[pgd_idx] & VMM_PAGE_MASK);
+    if (pte == NULL) {
+        return 0;
+    }
+    // 转换到内核线性地址
+    pte = (pte_t *)VMM_PA_LA((ptr_t)pte);
+    // 如果地址有效而且指针不为 NULL
+    if ((void *)pte[pte_idx] != NULL) {
+        if ((void *)pa != NULL) {
+            *pa = pte[pte_idx] & VMM_PAGE_MASK;
+        }
+        return 1;
+    }
+    return 0;
+}
+
 #ifdef __cplusplus
 }
 #endif

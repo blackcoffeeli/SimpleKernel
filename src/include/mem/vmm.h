@@ -136,7 +136,7 @@ typedef ptr_t pmd_t;
 typedef ptr_t pte_t;
 
 // 内核页目录区域
-extern pgd_t pgd_kernel[VMM_PAGE_TABLES_PRE_PAGE_DIRECTORY]
+extern pmd_t pgd_kernel[VMM_PAGE_TABLES_PRE_PAGE_DIRECTORY]
     __attribute__((aligned(VMM_PAGE_SIZE)));
 
 // 缺页处理
@@ -151,8 +151,15 @@ void enable_page(pmd_t *pgd);
 // 更换当前页目录
 void switch_pgd(pmd_t *pgd);
 
-// 初始化内核页目录
-void vmm_kernel_init(pmd_t *pgd);
+// 使用 flags 指出的页权限，把物理地址 pa 映射到虚拟地址 va
+void map(pmd_t *pgd_now, ptr_t va, ptr_t pa, uint32_t flags);
+
+// 取消虚拟地址 va 的物理映射
+void unmap(pmd_t *pgd_now, ptr_t va);
+
+// 如果虚拟地址 va 映射到物理地址则返回 1
+// 同时如果 pa 不是空指针则把物理地址写入 pa 参数
+uint32_t get_mapping(pmd_t *pgd_now, ptr_t va, ptr_t *pa);
 
 #ifdef __cplusplus
 }
